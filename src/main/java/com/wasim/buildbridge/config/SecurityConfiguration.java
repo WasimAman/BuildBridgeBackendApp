@@ -15,10 +15,14 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import com.wasim.buildbridge.exception.CustomAccessDeniedHandler;
+import com.wasim.buildbridge.exception.CustomAuthEntryPoint;
+import com.wasim.buildbridge.jwt.JwtFilter;
 import com.wasim.buildbridge.service.CustomUserDetailsService;
 
 @Configuration
@@ -27,6 +31,13 @@ public class SecurityConfiguration {
 
     @Autowired
     private CustomUserDetailsService userDetailsService;
+    @Autowired
+    private JwtFilter jwtFilter;
+    @Autowired
+    private CustomAccessDeniedHandler accessDeniedHandler;
+    @Autowired
+    private CustomAuthEntryPoint authEntryPoint;
+
     @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -62,17 +73,24 @@ public class SecurityConfiguration {
                     authz
                             .requestMatchers("/auth/**").permitAll()
                             .anyRequest().authenticated();
-                });
+                })
+                .exceptionHandling(exception->{
+                    exception
+                        .accessDeniedHandler(accessDeniedHandler)
+                        .authenticationEntryPoint(authEntryPoint);
+                })
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
     @Bean
     CorsConfigurationSource addConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
-        configuration.setAllowedOrigins(List.of("*"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
         configuration.setAllowCredentials(true);
-        configuration.setAllowedHeaders(List.of("Authorization"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
+        configuration.setExposedHeaders(List.of("Authorization"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

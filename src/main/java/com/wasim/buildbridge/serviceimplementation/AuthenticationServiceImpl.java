@@ -14,11 +14,14 @@ import org.springframework.stereotype.Service;
 import com.wasim.buildbridge.exception.SigninFailedException;
 import com.wasim.buildbridge.exception.SignupFailedException;
 import com.wasim.buildbridge.exception.UserAlreadyExistException;
+import com.wasim.buildbridge.jwt.JwtConstant;
+import com.wasim.buildbridge.jwt.JwtService;
 import com.wasim.buildbridge.model.User;
 import com.wasim.buildbridge.repository.UserRepository;
 import com.wasim.buildbridge.requestDTO.SigninRequestDTO;
 import com.wasim.buildbridge.requestDTO.SignupRequestDTO;
 import com.wasim.buildbridge.responseDTO.ApiResponseDTO;
+import com.wasim.buildbridge.responseDTO.AuthResponse;
 import com.wasim.buildbridge.service.AuthenticationService;
 
 @Service
@@ -29,6 +32,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private AuthenticationManager authenticationManager;
+    @Autowired
+    private JwtService jwtService;
 
     @Override
     public ApiResponseDTO signup(SignupRequestDTO request) {
@@ -63,11 +68,20 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             );
 
             // will add jwt token letter...
+            User user = userRepository.findByEmail(request.getEmail()).get();
+            AuthResponse authResponse = new AuthResponse(
+                jwtService.getToken(user),
+                JwtConstant.JWT_PREFIX,
+                user.getEmail(),
+                user.getUsername(),
+                LocalDateTime.now().plusMinutes(30)
+            );
 
             ApiResponseDTO response = new ApiResponseDTO(
                     true,
                     "Signin successful",
-                    null);
+                    authResponse
+            );
             return response;
         }catch(BadCredentialsException ex){
             throw ex;
