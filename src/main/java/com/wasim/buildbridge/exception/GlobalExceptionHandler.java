@@ -24,8 +24,13 @@ public class GlobalExceptionHandler {
                 .body(new ApiResponseDTO(false, message, data));
     }
 
-    @ExceptionHandler(UserAlreadyExistException.class)
-    public ResponseEntity<ApiResponseDTO> handleUserAlreadyExistException(UserAlreadyExistException ex) {
+    @ExceptionHandler(EmailAlreadyExistsException.class)
+    public ResponseEntity<ApiResponseDTO> handleUserAlreadyExistException(EmailAlreadyExistsException ex) {
+        return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(UsernameAlreadyExistsException.class)
+    public ResponseEntity<ApiResponseDTO> handleUsernameDuplicateException(UsernameAlreadyExistsException ex) {
         return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), null);
     }
 

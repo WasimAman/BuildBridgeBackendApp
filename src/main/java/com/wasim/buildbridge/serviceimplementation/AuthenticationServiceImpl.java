@@ -11,9 +11,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.wasim.buildbridge.exception.EmailAlreadyExistsException;
 import com.wasim.buildbridge.exception.SigninFailedException;
 import com.wasim.buildbridge.exception.SignupFailedException;
-import com.wasim.buildbridge.exception.UserAlreadyExistException;
+import com.wasim.buildbridge.exception.UsernameAlreadyExistsException;
 import com.wasim.buildbridge.jwt.JwtConstant;
 import com.wasim.buildbridge.jwt.JwtService;
 import com.wasim.buildbridge.model.User;
@@ -41,7 +42,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             boolean isExists = userRepository.existsByEmail(request.getEmail());
 
             if (isExists) {
-                throw new UserAlreadyExistException("User already exists with email: " + request.getEmail());
+                throw new EmailAlreadyExistsException("User already exists with email: " + request.getEmail());
+            }
+
+            isExists = userRepository.existsByUsername(request.getUsername());
+            if (isExists) {
+                throw new UsernameAlreadyExistsException("User already exists with username: " + request.getUsername());
             }
 
             User user = mapTOUser(request);
@@ -52,10 +58,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                     "Signup successful",
                     null);
             return response;
-        }catch(UserAlreadyExistException ex){
+        } catch (EmailAlreadyExistsException ex) {
             throw ex;
-        }
-        catch (Exception e) {
+        } catch (UsernameAlreadyExistsException ex) {
+            throw ex;
+        } catch (Exception e) {
             throw new SignupFailedException("Signup failed!");
         }
     }
@@ -64,30 +71,26 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public ApiResponseDTO signin(SigninRequestDTO request) {
         try {
             authenticationManager
-                    .authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-            );
+                    .authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
 
-            // will add jwt token letter...
             User user = userRepository.findByEmail(request.getEmail()).get();
             AuthResponse authResponse = new AuthResponse(
-                jwtService.getToken(user),
-                JwtConstant.JWT_PREFIX,
-                user.getEmail(),
-                user.getUsername(),
-                LocalDateTime.now().plusMinutes(30)
-            );
+                    jwtService.getToken(user),
+                    JwtConstant.JWT_PREFIX,
+                    user.getEmail(),
+                    user.getUsername(),
+                    LocalDateTime.now().plusMinutes(30));
 
             ApiResponseDTO response = new ApiResponseDTO(
                     true,
                     "Signin successful",
-                    authResponse
-            );
+                    authResponse);
             return response;
-        }catch(BadCredentialsException ex){
+        } catch (BadCredentialsException ex) {
             throw ex;
-        }catch(UsernameNotFoundException ex){
+        } catch (UsernameNotFoundException ex) {
             throw ex;
-        }catch (Exception e) {
+        } catch (Exception e) {
             throw new SigninFailedException("Signin failed!");
         }
     }

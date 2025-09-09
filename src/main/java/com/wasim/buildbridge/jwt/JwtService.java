@@ -67,4 +67,8 @@ public class JwtService {
         Claims allClaims = extractAllClaims(token);
         return allClaims.get(claim);
     }
+
+    public String getSubjectFromToken(){
+        return extractAllClaims(getSubjectFromToken()).getSubject();
+    }
 }
