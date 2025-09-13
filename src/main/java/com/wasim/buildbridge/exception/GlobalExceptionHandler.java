@@ -54,6 +54,12 @@ public class GlobalExceptionHandler {
                 .body(new ApiResponseDTO(false, "Internal error", null));
     }
 
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ApiResponseDTO> handleGeneral(RuntimeException ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ApiResponseDTO(false, ex.getMessage(), null));
+    }
+
     @ExceptionHandler(NoHandlerFoundException.class)
     public ResponseEntity<ApiResponseDTO> handleNoHandlerFound(NoHandlerFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -64,6 +70,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponseDTO> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
                 .body(new ApiResponseDTO(false, "Method not allowed", null));
+    }
+
+    @ExceptionHandler(ProjectNotFoundException.class)
+    public ResponseEntity<ApiResponseDTO> handleProjectNotFoundException(ProjectNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ApiResponseDTO(false, ex.getMessage(), null));
     }
 
 }

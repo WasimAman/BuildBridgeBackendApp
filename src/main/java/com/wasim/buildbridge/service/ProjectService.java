@@ -1,6 +1,8 @@
 package com.wasim.buildbridge.service;
 
 import com.wasim.buildbridge.requestDTO.AddProjectDTO;
+import com.wasim.buildbridge.requestDTO.CommentRequestDTO;
+import com.wasim.buildbridge.requestDTO.UpdateProjectDTO;
 import com.wasim.buildbridge.responseDTO.ApiResponseDTO;
 
 public interface ProjectService {
@@ -11,8 +13,12 @@ public interface ProjectService {
 
     ApiResponseDTO getProjectById(long projectId);
 
-    ApiResponseDTO updateProject(long projectId);
+    ApiResponseDTO updateProject(long projectId,UpdateProjectDTO updateProject);
 
     ApiResponseDTO deleteProject(long projectId);
+
+    ApiResponseDTO likeProject(long projectId, String username);
+
+    ApiResponseDTO commentProject(long projectId, CommentRequestDTO commentRequest);
     
 }

@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.wasim.buildbridge.requestDTO.AddProjectDTO;
+import com.wasim.buildbridge.requestDTO.CommentRequestDTO;
+import com.wasim.buildbridge.requestDTO.UpdateProjectDTO;
 import com.wasim.buildbridge.responseDTO.ApiResponseDTO;
 import com.wasim.buildbridge.service.ProjectService;
 
@@ -45,14 +47,26 @@ public class ProjectController {
     }
 
     @PutMapping("projects/{id}")
-    public ResponseEntity<ApiResponseDTO> updateProject(@PathVariable("id") long projectId){
-        ApiResponseDTO response = projectService.updateProject(projectId);
+    public ResponseEntity<ApiResponseDTO> updateProject(@PathVariable("id") long projectId,@RequestBody UpdateProjectDTO updateProject){
+        ApiResponseDTO response = projectService.updateProject(projectId,updateProject);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @DeleteMapping("projects/{id}")
     public ResponseEntity<ApiResponseDTO> deleteProject(@PathVariable("id") long projectId){
         ApiResponseDTO response = projectService.deleteProject(projectId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PostMapping("projects/{id}/like")
+    public ResponseEntity<ApiResponseDTO> likeProject(@PathVariable("id") long projectId,@RequestBody String username){
+        ApiResponseDTO response = projectService.likeProject(projectId,username);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PostMapping("projects/{id}/comment")
+    public ResponseEntity<ApiResponseDTO> commentProject(@PathVariable("id") long projectId,@RequestBody CommentRequestDTO commentRequest){
+        ApiResponseDTO response = projectService.commentProject(projectId,commentRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }

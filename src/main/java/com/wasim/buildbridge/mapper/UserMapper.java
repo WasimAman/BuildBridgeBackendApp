@@ -162,12 +162,11 @@ public class UserMapper {
 
     public Projects mapToProject(String username, AddProjectDTO projectDTO) {
         try {
-            User user = userRepository.findByUsernameOrEmail(username).orElseThrow(() -> {
-                throw new UsernameNotFoundException("User not found with username: " + username);
-            });
+            User owner = userRepository.findByUsernameOrEmail(username)
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
 
             Projects project = new Projects();
-            project.setOwner(user);
+            project.setOwner(owner);
             project.setTitle(projectDTO.getTitle());
             project.setImages(projectDTO.getImages());
             project.setDescription(projectDTO.getDescription());
@@ -177,28 +176,46 @@ public class UserMapper {
             project.setCreatedAt(LocalDateTime.now());
             project.setUpdatedAt(LocalDateTime.now());
 
-            for (String contributor : projectDTO.getContributors()) {
-                user = userRepository.findByUsernameOrEmail(contributor).orElseThrow(() -> {
-                    throw new UsernameNotFoundException("User not found with contributor username: " + contributor);
-                });
-
-                ProjectContributors projectContributors = new ProjectContributors();
-                projectContributors.setUser(user);
-                projectContributors.setProject(project);
-
-                if (contributor.equals(username)) {
-                    projectContributors.setRole(ProjectContributorRole.OWNER);
-                } else {
-                    projectContributors.setRole(ProjectContributorRole.COLLABORATOR);
-                }
-
-                project.getContributors().add(projectContributors);
+            if (project.getContributors() == null) {
+                project.setContributors(new ArrayList<>());
             }
+
+            ProjectContributors ownerContributor = new ProjectContributors();
+            ownerContributor.setUser(owner);
+            ownerContributor.setProject(project);
+            ownerContributor.setRole(ProjectContributorRole.OWNER);
+            project.getContributors().add(ownerContributor);
+
+            if (projectDTO.getContributors() != null) {
+                for (String contributorUsername : projectDTO.getContributors()) {
+
+                    if (contributorUsername.equals(username)) {
+                        continue;
+                    }
+
+                    User contributorUser = userRepository.findByUsernameOrEmail(contributorUsername)
+                            .orElseThrow(() -> new UsernameNotFoundException(
+                                    "User not found with contributor username: " + contributorUsername));
+
+                    boolean alreadyExists = project.getContributors().stream()
+                            .anyMatch(c -> c.getUser().getId() == contributorUser.getId());
+
+                    if (!alreadyExists) {
+                        ProjectContributors collaborator = new ProjectContributors();
+                        collaborator.setUser(contributorUser);
+                        collaborator.setProject(project);
+                        collaborator.setRole(ProjectContributorRole.COLLABORATOR);
+                        project.getContributors().add(collaborator);
+                    }
+                }
+            }
+
             return project;
         } catch (UsernameNotFoundException ex) {
             throw ex;
-        }catch(Exception ex){
-            throw new RuntimeException(ex.getMessage());
+        } catch (Exception ex) {
+            throw new RuntimeException("Error while mapping project: " + ex.getMessage(), ex);
         }
     }
+
 }
