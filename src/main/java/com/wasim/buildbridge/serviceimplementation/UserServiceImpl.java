@@ -1,14 +1,17 @@
 package com.wasim.buildbridge.serviceimplementation;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import com.wasim.buildbridge.mapper.UserMapper;
 import com.wasim.buildbridge.model.User;
 import com.wasim.buildbridge.repository.UserRepository;
+import com.wasim.buildbridge.requestDTO.UpdateUserDTO;
 import com.wasim.buildbridge.responseDTO.ApiResponseDTO;
 import com.wasim.buildbridge.responseDTO.UserDTO;
 import com.wasim.buildbridge.service.UserService;
@@ -20,83 +23,99 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private UserMapper userMapper;
 
     @Override
-    public ApiResponseDTO getUserProfile(String email) {
-        User user = getCurrentUser(email);
+    public ApiResponseDTO getUserProfile(String username) {
+        try {
+            User user = userRepository.findByUsernameOrEmail(username).orElseThrow(() -> {
+                throw new UsernameNotFoundException("User not found with this username: " + username);
+            });
 
-        UserDTO userDTO = mapToUserDTO(user);
-        ApiResponseDTO response = new ApiResponseDTO(
-                true,
-                "User profile fetched successfully",
-                userDTO);
+            UserDTO userdto = userMapper.mapToUserDTO(user);
+            ApiResponseDTO response = new ApiResponseDTO(
+                    true,
+                    "User data has been successfully fetched",
+                    userdto);
 
-        return response;
+            return response;
+        } catch (UsernameNotFoundException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new RuntimeException("Error: while fetching user data");
+        }
     }
 
+    @Transactional
+    @Modifying
     @Override
-    public ApiResponseDTO getUserProjects(String email) {
-        User user = getCurrentUser(email);
+    public ApiResponseDTO updateUserProfile(String username, UpdateUserDTO updateRequest) {
+        try {
+            User user = userRepository.findByUsernameOrEmail(username).orElseThrow(() -> {
+                throw new UsernameNotFoundException("User not found with this username: " + username);
+            });
 
-        return new ApiResponseDTO(
-                true,
-                "User projects fetched successfully",
-                user.getProjects());
-    }
-
-    @Override
-    public ApiResponseDTO getUserConnectinos(String email) {
-        User user = getCurrentUser(email);
-
-        return new ApiResponseDTO(
-                true,
-                "User connections fetched successfully",
-                user.getConnections());
+            user.setFullName(updateRequest.getFullName());
+            user.setProfileImgUrl(updateRequest.getProfileImgUrl());
+            user.setBio(updateRequest.getBio());
+            user.setSkills(updateRequest.getSkills());
+            user.setUpdatedAt(LocalDateTime.now());
+            userRepository.save(user);
+            ApiResponseDTO response = new ApiResponseDTO(
+                    true,
+                    "User updated successfully",
+                    null);
+            return response;
+        } catch (UsernameNotFoundException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new RuntimeException("Error: while updating user profile");
+        }
     }
 
     @Transactional
     @Override
-    public ApiResponseDTO updateUserSkills(String email, Set<String> skills) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        if (skills != null && !skills.isEmpty()) {
-            user.setSkills(new HashSet<>(skills));
+    public ApiResponseDTO deleteUserProfile(String username) {
+        try {
+            User user = userRepository.findByUsernameOrEmail(username).orElseThrow(() -> {
+                throw new UsernameNotFoundException("User not found with this username: " + username);
+            });
+
+            userRepository.delete(user);
+            ApiResponseDTO responseDTO = new ApiResponseDTO(
+                true,
+                "User deleted seccssfully",
+                username
+            );
+            return responseDTO;
+        } catch (UsernameNotFoundException ex) {
+            throw ex;
+        } catch (Exception e) {
+            throw new RuntimeException("Error: while deleting user");
         }
-
-        User updatedUser = userRepository.save(user);
-
-        return new ApiResponseDTO(true, "Skills updated successfully", updatedUser.getSkills());
     }
 
     @Override
-    public ApiResponseDTO updateUserProfile(String email, String imageUrl) {
-        User user = getCurrentUser(email);
-
-        if (imageUrl != null) {
-            user.setProfileImgUrl(imageUrl);
+    public ApiResponseDTO searchUserProfile(String query) {
+        try {
+            List<User> users = userRepository.search(query);
+            if(users == null || users.size() == 0){
+                return new ApiResponseDTO(
+                    true,
+                    "Cannot find user",
+                    null
+                );
+            }else{
+                return new ApiResponseDTO(
+                    true,
+                    "user has been searched",
+                    users
+                );
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Error: while searcing");
         }
-        User updatedUser = userRepository.save(user);
-
-        return new ApiResponseDTO(
-                true,
-                "User profile image updated successfully",
-                updatedUser.getProfileImgUrl());
     }
 
-    private User getCurrentUser(String email) {
-        return userRepository.findByEmail(email).orElseThrow(() -> {
-            throw new UsernameNotFoundException("User not found with email: " + email);
-        });
-    }
-
-    private UserDTO mapToUserDTO(User user) {
-        UserDTO userDTO = new UserDTO();
-        userDTO.setUsername(user.getUsername());
-        userDTO.setEmail(user.getEmail());
-        userDTO.setFullName(user.getFullName());
-        userDTO.setBio(user.getBio());
-        userDTO.setSkills(user.getSkills());
-
-        return userDTO;
-    }
 }

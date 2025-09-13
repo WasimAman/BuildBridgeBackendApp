@@ -1,19 +1,16 @@
 package com.wasim.buildbridge.service;
 
-import java.util.Set;
-
+import com.wasim.buildbridge.requestDTO.UpdateUserDTO;
 import com.wasim.buildbridge.responseDTO.ApiResponseDTO;
 
 public interface UserService {
 
-    ApiResponseDTO getUserProfile(String email);
+    ApiResponseDTO getUserProfile(String username);
 
-    ApiResponseDTO getUserProjects(String email);
+    ApiResponseDTO updateUserProfile(String username, UpdateUserDTO updateRequest);
 
-    ApiResponseDTO getUserConnectinos(String email);
+    ApiResponseDTO deleteUserProfile(String username);
 
-    ApiResponseDTO updateUserSkills(String email, Set<String> skills);
-
-    ApiResponseDTO updateUserProfile(String email, String imageUrl);
+    ApiResponseDTO searchUserProfile(String query);
     
 }

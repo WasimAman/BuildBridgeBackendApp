@@ -16,7 +16,7 @@ import com.wasim.buildbridge.service.AuthenticationService;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/auth/")
+@RequestMapping("/api/v1/auth/")
 public class AuthenticationController {
     @Autowired
     private AuthenticationService authenticationService;

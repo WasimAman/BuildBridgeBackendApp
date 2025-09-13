@@ -33,11 +33,12 @@ public class JwtFilter extends OncePerRequestFilter {
             if(token != null){
                 if(jwtService.validateToken(token)){
                     
-                    String email = jwtService.getClaim(token,JwtConstant.CLAIM_EMAIL).toString();
+                    // String email = jwtService.getClaim(token,JwtConstant.CLAIM_EMAIL).toString();
+                    String username = jwtService.getSubjectFromToken(token);
 
-                    if(email != null && SecurityContextHolder.getContext().getAuthentication() == null){
+                    if(username != null && SecurityContextHolder.getContext().getAuthentication() == null){
                         Authentication authentication = new UsernamePasswordAuthenticationToken(
-                            email,
+                            username,
                             null,
                             Collections.emptyList()
                         );
@@ -68,7 +69,6 @@ public class JwtFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String url = request.getRequestURI();
         System.out.println(url);
-        return url.startsWith("/auth/");
+        return url.startsWith("/api/v1/auth/");
     }
-    
 }

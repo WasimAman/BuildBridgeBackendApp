@@ -1,7 +1,6 @@
 package com.wasim.buildbridge.responseDTO;
 
-import java.time.LocalDateTime;
-
+import com.wasim.buildbridge.model.enums.ProjectContributorRole;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,9 +8,9 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class AuthResponse {
-    private String token;
-    private String tokenType;
+public class ProjectContributorDTO {
+    private Long userId;
     private String username;
-    private LocalDateTime tokenExpirationTime;
+    private String profileImgUrl;
+    private ProjectContributorRole role;
 }

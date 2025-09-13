@@ -9,9 +9,9 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class AuthResponse {
-    private String token;
-    private String tokenType;
+public class CommentDTO {
+    private long id;
+    private String comment;
     private String username;
-    private LocalDateTime tokenExpirationTime;
+    private LocalDateTime commentedAt;
 }

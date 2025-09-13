@@ -2,8 +2,6 @@ package com.wasim.buildbridge.responseDTO;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,15 +9,18 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserDTO {
-    private String username;
-    private String fullName;
-    private String profileImgUrl;
-    private String bio;
-    private Set<String> skills;
-    private List<ProjectDTO> projects;
-    private List<PostDTO> posts;
-    private ConnectionDTO connections;
+public class ProjectDTO {
+    private Long id;
+    private String title;
+    private String description;
+    private String repoUrl;
+    private List<String> images;
+
+    private List<LikeDTO> likes;
+    private List<CommentDTO> comments;
+
+    private List<ProjectContributorDTO> contributors;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

@@ -68,7 +68,8 @@ public class JwtService {
         return allClaims.get(claim);
     }
 
-    public String getSubjectFromToken(){
-        return extractAllClaims(getSubjectFromToken()).getSubject();
+    public String getSubjectFromToken(String token) {
+        return extractAllClaims(token).getSubject();
     }
+
 }
