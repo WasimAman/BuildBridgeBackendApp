@@ -18,6 +18,7 @@ import com.wasim.buildbridge.model.UserConnections;
 import com.wasim.buildbridge.model.enums.ProjectContributorRole;
 import com.wasim.buildbridge.repository.UserRepository;
 import com.wasim.buildbridge.requestDTO.AddProjectDTO;
+import com.wasim.buildbridge.requestDTO.PostRequestDTO;
 import com.wasim.buildbridge.responseDTO.CommentDTO;
 import com.wasim.buildbridge.responseDTO.ConnectionDTO;
 import com.wasim.buildbridge.responseDTO.ConnectionPreviewDTO;
@@ -142,19 +143,25 @@ public class UserMapper {
         return new ConnectionDTO(preview.size(), preview);
     }
 
+    public PostDTO mapToPostDTO(Post post) {
+        PostDTO dto = new PostDTO();
+        dto.setId(post.getId());
+        dto.setDescription(post.getDescription());
+        dto.setImages(post.getImages());
+        dto.setLikes(mapToLikeDTO(post.getLikes()));
+        dto.setComments(mapToCommentDTO(post.getComments()));
+        dto.setCreatedAt(post.getPostedAt());
+        dto.setUpdatedAt(post.getUpdatedAt());
+
+        return dto;
+    }
+
     public List<PostDTO> mapToPostDTO(List<Post> posts) {
         if (posts == null)
             return new ArrayList<>();
         List<PostDTO> postDTOs = new ArrayList<>();
         for (Post post : posts) {
-            PostDTO dto = new PostDTO();
-            dto.setId(post.getId());
-            dto.setDescription(post.getDescription());
-            dto.setImages(post.getImages());
-            dto.setLikesCount(post.getLikes() != null ? post.getLikes().size() : 0);
-            dto.setCommentsCount(post.getComments() != null ? post.getComments().size() : 0);
-            dto.setCreatedAt(post.getPostedAt());
-            dto.setUpdatedAt(post.getUpdatedAt());
+            PostDTO dto = mapToPostDTO(post);
             postDTOs.add(dto);
         }
         return postDTOs;
@@ -218,4 +225,23 @@ public class UserMapper {
         }
     }
 
+    public Post mapToPost(PostRequestDTO postRequest, String username) {
+        try {
+            User owner = userRepository.findByUsernameOrEmail(username)
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+            Post post = new Post();
+            post.setDescription(postRequest.getDescription());
+            post.setImages(postRequest.getImages());
+            post.setOwner(owner);
+            post.setPostedAt(LocalDateTime.now());
+            post.setUpdatedAt(LocalDateTime.now());
+            post.setLikes(new ArrayList<>());
+            post.setComments(new ArrayList<>());
+            return post;
+        } catch (UsernameNotFoundException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new RuntimeException("Error: while mapping post" + ex.getMessage(), ex);
+        }
+    }
 }

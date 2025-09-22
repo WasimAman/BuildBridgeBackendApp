@@ -15,8 +15,8 @@ public class PostDTO {
     private String description;
     private List<String> images;
 
-    private int likesCount;
-    private int commentsCount;
+    private List<LikeDTO> likes;
+    private List<CommentDTO> comments;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

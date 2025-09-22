@@ -59,14 +59,16 @@ public class ProjectController {
     }
 
     @PostMapping("projects/{id}/like")
-    public ResponseEntity<ApiResponseDTO> likeProject(@PathVariable("id") long projectId,@RequestBody String username){
+    public ResponseEntity<ApiResponseDTO> likeProject(@PathVariable("id") long projectId,Authentication authentication){
+        String username = authentication.getPrincipal().toString();
         ApiResponseDTO response = projectService.likeProject(projectId,username);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response); 
     }
 
     @PostMapping("projects/{id}/comment")
-    public ResponseEntity<ApiResponseDTO> commentProject(@PathVariable("id") long projectId,@RequestBody CommentRequestDTO commentRequest){
-        ApiResponseDTO response = projectService.commentProject(projectId,commentRequest);
+    public ResponseEntity<ApiResponseDTO> commentProject(@PathVariable("id") long projectId,@RequestBody CommentRequestDTO comment,Authentication authentication){
+        String username = authentication.getPrincipal().toString();
+        ApiResponseDTO response = projectService.commentProject(projectId,comment,username);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }

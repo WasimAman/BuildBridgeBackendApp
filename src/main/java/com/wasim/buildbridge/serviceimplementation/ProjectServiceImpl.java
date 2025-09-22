@@ -184,10 +184,10 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public ApiResponseDTO commentProject(long projectId, CommentRequestDTO commentRequest) {
+    public ApiResponseDTO commentProject(long projectId, CommentRequestDTO commentRequest,String username) {
         try {
-            User user = userRepository.findByUsernameOrEmail(commentRequest.getUsername()).orElseThrow(() -> {
-                throw new UsernameNotFoundException("User not found with username: " + commentRequest.getUsername());
+            User user = userRepository.findByUsernameOrEmail(username).orElseThrow(() -> {
+                throw new UsernameNotFoundException("User not found with username: " + username);
             });
 
             Projects project = projectRepository.findById(projectId).orElseThrow(() -> {

@@ -19,6 +19,6 @@ public interface ProjectService {
 
     ApiResponseDTO likeProject(long projectId, String username);
 
-    ApiResponseDTO commentProject(long projectId, CommentRequestDTO commentRequest);
+    ApiResponseDTO commentProject(long projectId, CommentRequestDTO comment,String username);
     
 }
