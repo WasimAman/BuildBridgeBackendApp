@@ -143,6 +143,19 @@ public class UserMapper {
         return new ConnectionDTO(preview.size(), preview);
     }
 
+    public ConnectionDTO mapToConnectionDTO(List<UserConnections> connections) {
+        List<ConnectionPreviewDTO> preview = new ArrayList<>();
+
+        if (connections != null) {
+            for (UserConnections uc : connections) {
+                User s = uc.getSender();
+                preview.add(new ConnectionPreviewDTO(s.getId(), s.getUsername(), s.getProfileImgUrl()));
+            }
+        }
+
+        return new ConnectionDTO(preview.size(), preview);
+    }
+
     public PostDTO mapToPostDTO(Post post) {
         PostDTO dto = new PostDTO();
         dto.setId(post.getId());

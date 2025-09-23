@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
 
 import com.wasim.buildbridge.exception.PostNotFoundException;
 import com.wasim.buildbridge.mapper.UserMapper;
@@ -24,6 +25,7 @@ import com.wasim.buildbridge.responseDTO.LikeDTO;
 import com.wasim.buildbridge.responseDTO.PostDTO;
 import com.wasim.buildbridge.service.PostService;
 
+@Service
 public class PostServiceImpl implements PostService {
 
     @Autowired

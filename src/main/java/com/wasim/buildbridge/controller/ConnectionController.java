@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,34 +29,35 @@ public class ConnectionController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @GetMapping("connections/accept/{id}")
+    @PutMapping("connections/accept/{id}")
     public ResponseEntity<ApiResponseDTO> acceptRequest(@PathVariable("id") long connectionId){
         ApiResponseDTO response = connectionService.acceptRequest(connectionId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PostMapping("connections/reject/{id}")
+    @PutMapping("connections/reject/{id}")
     public ResponseEntity<ApiResponseDTO> rejectRequest(@PathVariable("id") long connectionId){
         ApiResponseDTO response = connectionService.rejectRequest(connectionId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping("connections/pending")
     public ResponseEntity<ApiResponseDTO> getAllPendingRequest(Authentication authentication){
         String username = authentication.getPrincipal().toString();
         ApiResponseDTO response = connectionService.getAllPendingRequest(username);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping("connections")
     public ResponseEntity<ApiResponseDTO> getUserConnections(Authentication authentication){
         String username = authentication.getPrincipal().toString();
         ApiResponseDTO response = connectionService.getUserConnection(username);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @DeleteMapping("connections/{id}")
-    public ResponseEntity<ApiResponseDTO> removeConnection(){
-        return ResponseEntity.status(HttpStatus.CREATED).body(null);
+    public ResponseEntity<ApiResponseDTO> removeConnection(@PathVariable("id") long connectionId){
+        ApiResponseDTO response = connectionService.removeConnection(connectionId);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }
