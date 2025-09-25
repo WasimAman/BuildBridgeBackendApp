@@ -24,18 +24,26 @@ public class GlobalExceptionHandler {
                 .body(new ApiResponseDTO(false, message, data));
     }
 
+    // User already exists
     @ExceptionHandler(UserAlreadyExistsException.class)
-    public ResponseEntity<ApiResponseDTO> handleUserAlreadyExistException(UserAlreadyExistsException ex) {
+    public ResponseEntity<ApiResponseDTO> handleUserAlreadyExist(UserAlreadyExistsException ex) {
         return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), null);
     }
 
+    // Authentication failures
     @ExceptionHandler({ SignupFailedException.class, SigninFailedException.class })
     public ResponseEntity<ApiResponseDTO> handleAuthExceptions(RuntimeException ex) {
-        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), null);
+        return buildResponse(HttpStatus.UNAUTHORIZED, ex.getMessage(), null);
     }
 
+    @ExceptionHandler({ BadCredentialsException.class, UsernameNotFoundException.class })
+    public ResponseEntity<ApiResponseDTO> handleBadCredentials(RuntimeException ex) {
+        return buildResponse(HttpStatus.UNAUTHORIZED, "Invalid username/email or password", null);
+    }
+
+    // Validation errors
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponseDTO> handleValidationException(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ApiResponseDTO> handleValidation(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getAllErrors().forEach(error -> {
             errors.put(((FieldError) error).getField(), error.getDefaultMessage());
@@ -43,39 +51,41 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.BAD_REQUEST, "Validation failed", errors);
     }
 
-    @ExceptionHandler({ BadCredentialsException.class, UsernameNotFoundException.class })
-    public ResponseEntity<ApiResponseDTO> handleAuthFailedExceptions(RuntimeException ex) {
-        return buildResponse(HttpStatus.UNAUTHORIZED, "Invalid email or password", null);
+    // Not found exceptions
+    @ExceptionHandler(PostNotFoundException.class)
+    public ResponseEntity<ApiResponseDTO> handlePostNotFound(PostNotFoundException ex) {
+        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), null);
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponseDTO> handleAny(Exception ex) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ApiResponseDTO(false, "Internal error", null));
+    @ExceptionHandler(ProjectNotFoundException.class)
+    public ResponseEntity<ApiResponseDTO> handleProjectNotFound(ProjectNotFoundException ex) {
+        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), null);
     }
 
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ApiResponseDTO> handleGeneral(RuntimeException ex) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ApiResponseDTO(false, ex.getMessage(), null));
+    @ExceptionHandler(ConnectionNotFoundException.class)
+    public ResponseEntity<ApiResponseDTO> handleConnectionNotFound(ConnectionNotFoundException ex) {
+        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), null);
     }
 
+    // Authorization failures
+    @ExceptionHandler(UnauthorizedActionException.class)
+    public ResponseEntity<ApiResponseDTO> handleUnauthorized(UnauthorizedActionException ex) {
+        return buildResponse(HttpStatus.FORBIDDEN, ex.getMessage(), null);
+    }
+
+    // Generic errors
     @ExceptionHandler(NoHandlerFoundException.class)
-    public ResponseEntity<ApiResponseDTO> handleNoHandlerFound(NoHandlerFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ApiResponseDTO(false, "Endpoint not found: " + ex.getRequestURL(), null));
+    public ResponseEntity<ApiResponseDTO> handleNoHandler(NoHandlerFoundException ex) {
+        return buildResponse(HttpStatus.NOT_FOUND, "Endpoint not found: " + ex.getRequestURL(), null);
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ApiResponseDTO> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
-        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
-                .body(new ApiResponseDTO(false, "Method not allowed", null));
+        return buildResponse(HttpStatus.METHOD_NOT_ALLOWED, "HTTP method not allowed", null);
     }
 
-    @ExceptionHandler(ProjectNotFoundException.class)
-    public ResponseEntity<ApiResponseDTO> handleProjectNotFoundException(ProjectNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ApiResponseDTO(false, ex.getMessage(), null));
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiResponseDTO> handleAny(Exception ex) {
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred", null);
     }
-
 }

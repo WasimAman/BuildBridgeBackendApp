@@ -47,14 +47,16 @@ public class ProjectController {
     }
 
     @PutMapping("projects/{id}")
-    public ResponseEntity<ApiResponseDTO> updateProject(@PathVariable("id") long projectId,@RequestBody UpdateProjectDTO updateProject){
-        ApiResponseDTO response = projectService.updateProject(projectId,updateProject);
+    public ResponseEntity<ApiResponseDTO> updateProject(@PathVariable("id") long projectId,@RequestBody UpdateProjectDTO updateProject,Authentication authentication){
+        String username = authentication.getPrincipal().toString();
+        ApiResponseDTO response = projectService.updateProject(projectId,updateProject,username);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @DeleteMapping("projects/{id}")
-    public ResponseEntity<ApiResponseDTO> deleteProject(@PathVariable("id") long projectId){
-        ApiResponseDTO response = projectService.deleteProject(projectId);
+    public ResponseEntity<ApiResponseDTO> deleteProject(@PathVariable("id") long projectId,Authentication authentication){
+        String username = authentication.getPrincipal().toString();
+        ApiResponseDTO response = projectService.deleteProject(projectId,username);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 

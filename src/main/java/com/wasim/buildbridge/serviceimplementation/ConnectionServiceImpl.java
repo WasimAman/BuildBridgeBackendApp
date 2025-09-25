@@ -6,8 +6,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-
 import com.wasim.buildbridge.exception.ConnectionNotFoundException;
+import com.wasim.buildbridge.exception.UnauthorizedActionException;
 import com.wasim.buildbridge.mapper.UserMapper;
 import com.wasim.buildbridge.model.User;
 import com.wasim.buildbridge.model.UserConnections;
@@ -32,76 +32,42 @@ public class ConnectionServiceImpl implements ConnectionService {
 
     @Override
     public ApiResponseDTO sendRequest(String senderUsername, String receiverUsername) {
-        try {
-            User sender = userRepository.findByUsernameOrEmail(senderUsername)
-                    .orElseThrow(
-                            () -> new UsernameNotFoundException(
-                                    "User not found with sender username: " + senderUsername));
+        User sender = userRepository.findByUsernameOrEmail(senderUsername)
+                .orElseThrow(
+                        () -> new UsernameNotFoundException(
+                                "User not found with sender username: " + senderUsername));
 
-            User receiver = userRepository.findByUsernameOrEmail(receiverUsername)
-                    .orElseThrow(
-                            () -> new UsernameNotFoundException(
-                                    "User not found with receiver username: " + receiverUsername));
+        User receiver = userRepository.findByUsernameOrEmail(receiverUsername)
+                .orElseThrow(
+                        () -> new UsernameNotFoundException(
+                                "User not found with receiver username: " + receiverUsername));
 
-            UserConnections connection = new UserConnections();
-            connection.setSender(sender);
-            connection.setReceiver(receiver);
-            connection.setStatus(InvitationStatus.PENDING);
-            connection.setSentAt(LocalDateTime.now());
+        UserConnections connection = new UserConnections();
+        connection.setSender(sender);
+        connection.setReceiver(receiver);
+        connection.setStatus(InvitationStatus.PENDING);
+        connection.setSentAt(LocalDateTime.now());
 
-            connectionRepository.save(connection);
-            return new ApiResponseDTO(
-                    true,
-                    "Connection request sent from " + senderUsername + " to " + receiverUsername,
-                    null);
-        } catch (UsernameNotFoundException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new RuntimeException("Error: while sending request");
-        }
+        connectionRepository.save(connection);
+        return new ApiResponseDTO(
+                true,
+                "Connection request sent from " + senderUsername + " to " + receiverUsername,
+                null);
     }
 
     @Override
-    public ApiResponseDTO acceptRequest(long connectionId) {
-        try {
-            UserConnections connection = connectionRepository.findById(connectionId).orElseThrow(() -> {
-                throw new ConnectionNotFoundException("Connection not found with id: " + connectionId);
-            });
+    public ApiResponseDTO acceptRequest(long connectionId, String currentUser) {
+        UserConnections connection = connectionRepository.findById(connectionId)
+                .orElseThrow(() -> new ConnectionNotFoundException("Connection not found with id: " + connectionId));
 
-            connection.setStatus(InvitationStatus.ACCEPTED);
-
-            connectionRepository.save(connection);
-            return new ApiResponseDTO(
-                    true,
-                    "Connection request accepted (id: " + connectionId + ")",
-                    null);
-        } catch (ConnectionNotFoundException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new RuntimeException("Error: while accepting request");
-        }
-    }
-
-    @Override
-    public ApiResponseDTO rejectRequest(long connectionId) {
-        try {
-            UserConnections connection = connectionRepository.findById(connectionId).orElseThrow(() -> {
-                throw new ConnectionNotFoundException("Connection not found with id: " + connectionId);
-            });
-
-            connection.setStatus(InvitationStatus.REJECTED);
-
-            connectionRepository.delete(connection);
-            return new ApiResponseDTO(
-                    true,
-                    "Connection request rejected (id: " + connectionId + ")",
-                    null);
-        } catch (ConnectionNotFoundException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new RuntimeException("Error: while rejecting request");
+        if (!connection.getReceiver().getUsername().equals(currentUser)) {
+            throw new UnauthorizedActionException("Unauthorized: Only receiver can accept");
         }
 
+        connection.setStatus(InvitationStatus.ACCEPTED);
+        connectionRepository.save(connection);
+
+        return new ApiResponseDTO(true, "Connection accepted", null);
     }
 
     @Override
@@ -133,15 +99,30 @@ public class ConnectionServiceImpl implements ConnectionService {
     }
 
     @Override
-    public ApiResponseDTO removeConnection(long connectionId) {
-        UserConnections connection = connectionRepository.findById(connectionId).orElseThrow(() -> {
-            throw new ConnectionNotFoundException("Connection not found with id: " + connectionId);
-        });
+    public ApiResponseDTO rejectRequest(long connectionId, String currentUser) {
+        UserConnections connection = connectionRepository.findById(connectionId)
+                .orElseThrow(() -> new ConnectionNotFoundException("Connection not found with id: " + connectionId));
+
+        if (!connection.getReceiver().getUsername().equals(currentUser)) {
+            throw new UnauthorizedActionException("Unauthorized: Only receiver can reject");
+        }
 
         connectionRepository.delete(connection);
-        return new ApiResponseDTO(
-                true,
-                "Connection removed (id: " + connectionId + ")",
-                null);
+        return new ApiResponseDTO(true, "Connection rejected", null);
     }
+
+    @Override
+    public ApiResponseDTO removeConnection(long connectionId, String currentUser) {
+        UserConnections connection = connectionRepository.findById(connectionId)
+                .orElseThrow(() -> new ConnectionNotFoundException("Connection not found with id: " + connectionId));
+
+        if (!(connection.getSender().getUsername().equals(currentUser) ||
+                connection.getReceiver().getUsername().equals(currentUser))) {
+            throw new UnauthorizedActionException("Unauthorized: Only participants can remove");
+        }
+
+        connectionRepository.delete(connection);
+        return new ApiResponseDTO(true, "Connection removed", null);
+    }
+
 }

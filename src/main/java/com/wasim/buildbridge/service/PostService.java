@@ -12,9 +12,9 @@ public interface PostService {
 
     ApiResponseDTO getPostById(String username, long projectId);
 
-    ApiResponseDTO updatePost(long postId, PostRequestDTO postRequest);
+    ApiResponseDTO updatePost(long postId, PostRequestDTO postRequest,String currentUser);
 
-    ApiResponseDTO deletePost(long postId);
+    ApiResponseDTO deletePost(long postId,String currentUser);
 
     ApiResponseDTO like(long postId,String username);
 

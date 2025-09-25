@@ -13,9 +13,9 @@ public interface ProjectService {
 
     ApiResponseDTO getProjectById(long projectId);
 
-    ApiResponseDTO updateProject(long projectId,UpdateProjectDTO updateProject);
+    ApiResponseDTO updateProject(long projectId,UpdateProjectDTO updateProject,String currentUser);
 
-    ApiResponseDTO deleteProject(long projectId);
+    ApiResponseDTO deleteProject(long projectId,String currentUser);
 
     ApiResponseDTO likeProject(long projectId, String username);
 

@@ -28,94 +28,68 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ApiResponseDTO getUserProfile(String username) {
-        try {
-            User user = userRepository.findByUsernameOrEmail(username).orElseThrow(() -> {
-                throw new UsernameNotFoundException("User not found with this username: " + username);
-            });
+        User user = userRepository.findByUsernameOrEmail(username).orElseThrow(() -> {
+            throw new UsernameNotFoundException("User not found with this username: " + username);
+        });
 
-            UserDTO userdto = userMapper.mapToUserDTO(user);
-            ApiResponseDTO response = new ApiResponseDTO(
-                    true,
-                    "User data has been successfully fetched",
-                    userdto);
+        UserDTO userdto = userMapper.mapToUserDTO(user);
+        ApiResponseDTO response = new ApiResponseDTO(
+                true,
+                "User data has been successfully fetched",
+                userdto);
 
-            return response;
-        } catch (UsernameNotFoundException ex) {
-            throw ex;
-        } catch (Exception ex) {
-            throw new RuntimeException("Error: while fetching user data");
-        }
+        return response;
     }
 
     @Transactional
     @Modifying
     @Override
     public ApiResponseDTO updateUserProfile(String username, UpdateUserDTO updateRequest) {
-        try {
-            User user = userRepository.findByUsernameOrEmail(username).orElseThrow(() -> {
-                throw new UsernameNotFoundException("User not found with this username: " + username);
-            });
+        User user = userRepository.findByUsernameOrEmail(username).orElseThrow(() -> {
+            throw new UsernameNotFoundException("User not found with this username: " + username);
+        });
 
-            user.setFullName(updateRequest.getFullName());
-            user.setProfileImgUrl(updateRequest.getProfileImgUrl());
-            user.setBio(updateRequest.getBio());
-            user.setSkills(updateRequest.getSkills());
-            user.setUpdatedAt(LocalDateTime.now());
-            userRepository.save(user);
-            ApiResponseDTO response = new ApiResponseDTO(
-                    true,
-                    "User updated successfully",
-                    null);
-            return response;
-        } catch (UsernameNotFoundException ex) {
-            throw ex;
-        } catch (Exception ex) {
-            throw new RuntimeException("Error: while updating user profile");
-        }
+        user.setFullName(updateRequest.getFullName());
+        user.setProfileImgUrl(updateRequest.getProfileImgUrl());
+        user.setBio(updateRequest.getBio());
+        user.setSkills(updateRequest.getSkills());
+        user.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(user);
+        ApiResponseDTO response = new ApiResponseDTO(
+                true,
+                "User updated successfully",
+                null);
+        return response;
     }
 
     @Transactional
     @Override
     public ApiResponseDTO deleteUserProfile(String username) {
-        try {
-            User user = userRepository.findByUsernameOrEmail(username).orElseThrow(() -> {
-                throw new UsernameNotFoundException("User not found with this username: " + username);
-            });
+        User user = userRepository.findByUsernameOrEmail(username).orElseThrow(() -> {
+            throw new UsernameNotFoundException("User not found with this username: " + username);
+        });
 
-            userRepository.delete(user);
-            ApiResponseDTO responseDTO = new ApiResponseDTO(
+        userRepository.delete(user);
+        ApiResponseDTO responseDTO = new ApiResponseDTO(
                 true,
                 "User deleted seccssfully",
-                username
-            );
-            return responseDTO;
-        } catch (UsernameNotFoundException ex) {
-            throw ex;
-        } catch (Exception e) {
-            throw new RuntimeException("Error: while deleting user");
-        }
+                username);
+        return responseDTO;
     }
 
     @Override
     public ApiResponseDTO searchUserProfile(String query) {
-        try {
-            List<User> users = userRepository.search(query);
-            if(users == null || users.size() == 0){
-                return new ApiResponseDTO(
+        List<User> users = userRepository.search(query);
+        if (users == null || users.size() == 0) {
+            return new ApiResponseDTO(
                     true,
                     "Cannot find user",
-                    null
-                );
-            }else{
-                return new ApiResponseDTO(
+                    null);
+        } else {
+            return new ApiResponseDTO(
                     true,
                     "user has been searched",
-                    users
-                );
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Error: while searcing");
+                    users);
         }
     }
-
 }

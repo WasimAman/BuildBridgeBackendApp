@@ -5,13 +5,9 @@ import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import com.wasim.buildbridge.exception.SigninFailedException;
-import com.wasim.buildbridge.exception.SignupFailedException;
 import com.wasim.buildbridge.exception.UserAlreadyExistsException;
 import com.wasim.buildbridge.jwt.JwtConstant;
 import com.wasim.buildbridge.jwt.JwtService;
@@ -36,58 +32,46 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public ApiResponseDTO signup(SignupRequestDTO request) {
-        try {
-            boolean isExists = userRepository.existsByEmail(request.getEmail());
+        boolean isExists = userRepository.existsByEmail(request.getEmail());
 
-            if (isExists) {
-                throw new UserAlreadyExistsException("User already exists with email: " + request.getEmail());
-            }
-
-            isExists = userRepository.existsByUsername(request.getUsername());
-            if (isExists) {
-                throw new UserAlreadyExistsException("User already exists with username: " + request.getUsername());
-            }
-
-            User user = mapTOUser(request);
-            userRepository.save(user);
-
-            ApiResponseDTO response = new ApiResponseDTO(
-                    true,
-                    "Signup successful",
-                    null);
-            return response;
-        } catch (UserAlreadyExistsException ex) {
-            throw ex;
-        }catch (Exception e) {
-            throw new SignupFailedException("Signup failed!");
+        if (isExists) {
+            throw new UserAlreadyExistsException("User already exists with email: " + request.getEmail());
         }
+
+        isExists = userRepository.existsByUsername(request.getUsername());
+        if (isExists) {
+            throw new UserAlreadyExistsException("User already exists with username: " + request.getUsername());
+        }
+
+        User user = mapTOUser(request);
+        userRepository.save(user);
+
+        ApiResponseDTO response = new ApiResponseDTO(
+                true,
+                "Signup successful",
+                null);
+        return response;
     }
 
     @Override
     public ApiResponseDTO signin(SigninRequestDTO request) {
-        try {
-            authenticationManager
-                    .authenticate(new UsernamePasswordAuthenticationToken(request.getUsernameOrEmail(), request.getPassword()));
 
-            User user = userRepository.findByUsernameOrEmail(request.getUsernameOrEmail()).get();
-            AuthResponse authResponse = new AuthResponse(
-                    jwtService.getToken(user),
-                    JwtConstant.JWT_PREFIX,
-                    user.getUsername(),
-                    LocalDateTime.now().plusMinutes(30));
+        authenticationManager
+                .authenticate(new UsernamePasswordAuthenticationToken(request.getUsernameOrEmail(),
+                        request.getPassword()));
 
-            ApiResponseDTO response = new ApiResponseDTO(
-                    true,
-                    "Signin successful",
-                    authResponse);
-            return response;
-        } catch (BadCredentialsException ex) {
-            throw ex;
-        } catch (UsernameNotFoundException ex) {
-            throw ex;
-        } catch (Exception e) {
-            throw new SigninFailedException("Signin failed!");
-        }
+        User user = userRepository.findByUsernameOrEmail(request.getUsernameOrEmail()).get();
+        AuthResponse authResponse = new AuthResponse(
+                jwtService.getToken(user),
+                JwtConstant.JWT_PREFIX,
+                user.getUsername(),
+                LocalDateTime.now().plusMinutes(30));
+
+        ApiResponseDTO response = new ApiResponseDTO(
+                true,
+                "Signin successful",
+                authResponse);
+        return response;
     }
 
     private User mapTOUser(SignupRequestDTO request) {

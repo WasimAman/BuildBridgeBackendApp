@@ -48,13 +48,15 @@ public class PostController{
 
     @PutMapping("posts/{id}")
     public ResponseEntity<ApiResponseDTO> editPost(@PathVariable("id") long postId,@RequestBody PostRequestDTO postRequest,Authentication authentication){
-        ApiResponseDTO response = postService.updatePost(postId,postRequest);
+        String username = authentication.getPrincipal().toString();
+        ApiResponseDTO response = postService.updatePost(postId,postRequest,username);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @DeleteMapping("posts/{id}")
-    public ResponseEntity<ApiResponseDTO> deletePost(@PathVariable("id") long postId){
-        ApiResponseDTO response = postService.deletePost(postId);
+    public ResponseEntity<ApiResponseDTO> deletePost(@PathVariable("id") long postId,Authentication authentication){
+        String username = authentication.getPrincipal().toString();
+        ApiResponseDTO response = postService.deletePost(postId,username);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 

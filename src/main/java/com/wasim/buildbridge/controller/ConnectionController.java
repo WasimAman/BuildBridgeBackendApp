@@ -30,14 +30,18 @@ public class ConnectionController {
     }
 
     @PutMapping("connections/accept/{id}")
-    public ResponseEntity<ApiResponseDTO> acceptRequest(@PathVariable("id") long connectionId){
-        ApiResponseDTO response = connectionService.acceptRequest(connectionId);
+    public ResponseEntity<ApiResponseDTO> acceptRequest(@PathVariable("id") long connectionId,Authentication authentication){
+
+        String username = authentication.getPrincipal().toString();
+        ApiResponseDTO response = connectionService.acceptRequest(connectionId,username);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PutMapping("connections/reject/{id}")
-    public ResponseEntity<ApiResponseDTO> rejectRequest(@PathVariable("id") long connectionId){
-        ApiResponseDTO response = connectionService.rejectRequest(connectionId);
+    public ResponseEntity<ApiResponseDTO> rejectRequest(@PathVariable("id") long connectionId,Authentication authentication){
+
+        String username = authentication.getPrincipal().toString();
+        ApiResponseDTO response = connectionService.rejectRequest(connectionId,username);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
@@ -56,8 +60,9 @@ public class ConnectionController {
     }
 
     @DeleteMapping("connections/{id}")
-    public ResponseEntity<ApiResponseDTO> removeConnection(@PathVariable("id") long connectionId){
-        ApiResponseDTO response = connectionService.removeConnection(connectionId);
+    public ResponseEntity<ApiResponseDTO> removeConnection(@PathVariable("id") long connectionId,Authentication authentication){
+        String username = authentication.getPrincipal().toString();
+        ApiResponseDTO response = connectionService.removeConnection(connectionId,username);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }
